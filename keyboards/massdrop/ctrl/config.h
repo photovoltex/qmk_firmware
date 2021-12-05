@@ -24,6 +24,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define PRODUCT_ID          0xEED2
 #define DEVICE_VER          0x0101
 
+// #define RAW_USAGE_PAGE 0xFF60
+// #define RAW_USAGE_ID 0x61
+
 #define MANUFACTURER        "Massdrop Inc."
 #define PRODUCT             "CTRL Keyboard"
 #define SERIAL_NUM          "Unavailable"

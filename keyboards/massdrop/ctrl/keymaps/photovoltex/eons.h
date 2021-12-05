@@ -45,6 +45,7 @@ extern eons_state_t eons_state;
 
 extern const eons_symbol_t eons_symbol_table[];
 
+void eons_init(void);
 void eons_start(void);
 void eons_start_user(void);
 void eons_symbol_fallback(void);

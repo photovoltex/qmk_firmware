@@ -1,5 +1,9 @@
 #include QMK_KEYBOARD_H
+// #include "raw_hid.h"
 
+#include <string.h>
+
+#include "hid_wrapper.h"
 #include "eons.h"
 
 // #include "print.h"
@@ -28,7 +32,55 @@ enum ctrl_keycodes {
     https://docs.qmk.fm/#/feature_rawhid
 */
 
-void (*const sus)(const char*) = &send_unicode_string;  
+#define TAP_CODE_DELAY 1
+
+const uint8_t UNDEFINED[RAW_EPSIZE] = "undefined";
+const uint8_t SEQ_S[RAW_EPSIZE] = "seq_started";
+const uint8_t CTC[RAW_EPSIZE] = "copied_to_clip";
+const uint8_t SEQ_E[RAW_EPSIZE] = "seq_ended";
+
+bool cmp_payloads(const uint8_t* cmp1, uint8_t* cmp2) {
+    int count = 0, i = 0;
+    for (; i < RAW_EPSIZE; i++) {
+        if(cmp1[i] == cmp2[i]) {
+            count++;
+        }
+    }
+    return count == RAW_EPSIZE;
+}
+
+void raw_hid_receive(uint8_t *data, uint8_t length) {
+    if(cmp_payloads(UNDEFINED, data)){
+        // eons_symbol_fallback();
+        s_hid_send("hewwo world uwu");
+    } else if(cmp_payloads(SEQ_S, data)) {
+
+        tap_code_delay(KC_V, 10);
+
+        // tap_code16(C(KC_V));
+        // unregister_code16(C(KC_V));
+
+        // eons_start();
+        // i_hid_send(SEQ_S);
+
+    } else if(cmp_payloads(CTC, data)) {
+
+        i_hid_send(CTC);
+
+    } else if(cmp_payloads(SEQ_E, data)) {
+
+        i_hid_send(SEQ_E);
+
+    } else {
+        s_hid_send("close");
+        // execute ctrl + v
+        // send back to app that the proccess is done
+    }
+    // else eons_success(); // probably ignore anything on success
+
+}
+
+void (*const sus)(const char*) = &send_unicode_string;
 
 const eons_symbol_t eons_symbol_table[] = EONS_TABLE(
     EONS_SYM("ae", sus, "ä"), // ä
@@ -39,15 +91,15 @@ const eons_symbol_t eons_symbol_table[] = EONS_TABLE(
     EONS_SYM("OE", sus, "Ö"), // Ö
     EONS_SYM("ss", sus, "ß"), // ß
 
-    //EONS_SYM("uwu",     sus, "(′ꈍωꈍ‵)"),  // ꈍ doesnt work 
-    EONS_SYM("mshrug", sus, "¯\\\\_(ツ)\\_/¯"), 
-    EONS_SYM("shrug",   sus, "¯\\_(ツ)_/¯"), 
+    //EONS_SYM("uwu",     sus, "(′ꈍωꈍ‵)"),  // ꈍ doesnt work
+    EONS_SYM("mshrug", sus, "¯\\\\_(ツ)\\_/¯"),
+    EONS_SYM("shrug",   sus, "¯\\_(ツ)_/¯"),
     EONS_SYM("cat",     sus, "( ⓛ ω ⓛ * )"),
     EONS_SYM("give",    sus, "ლ(◕ω◕ლ)"),
     EONS_SYM("sweat",   sus, "(⌒_⌒;)"),
     EONS_SYM("zzz",     sus, "( ≚ᄌ≚)ƶƵ"),
     EONS_SYM("smile",   sus, "(´• ᴗ •̥`)"),
-    EONS_SYM("eyes",    sus, "( ´◔ ω◔`)"), 
+    EONS_SYM("eyes",    sus, "( ´◔ ω◔`)"),
     EONS_SYM("worries", sus, ":( ´◦ω◦｀):"),
     EONS_SYM("serious", sus, "ಠ_ಠ")
 );
@@ -63,7 +115,7 @@ const eons_symbol_t eons_symbol_table[] = EONS_TABLE(
 
 
     RGB LIGHTING see https://docs.qmk.fm/#/keycodes?id=rgb-lighting
-        RGB_TOG             => toogles rgb -> toogles between bottom off, 
+        RGB_TOG             => toogles rgb -> toogles between bottom off,
         RGB_SPD / RGB_SPI   => decreases or increases the rgb speed
         RGB_SAD / RGB_SAI   => decreases or increases the saturation
         RGB_VAD / RGB_VAI   => decreases or increases the brightness
@@ -210,16 +262,16 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
         case EONS:
             if (record->event.pressed) {
-                eons_start();
+                eons_init();
             }
             return false;
-        /* 
+        /*
         case some_case:
             if (record->event.pressed) {
 
             } else {
-                
-            } 
+
+            }
             break;
         */
         default:
